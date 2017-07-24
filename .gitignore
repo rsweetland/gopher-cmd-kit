@@ -1,0 +1,15 @@
+# package directories
+node_modules
+jspm_packages
+
+# test coverage directories
+coverage
+
+# Serverless directories
+.serverless
+
+app/bundle.js
+.DS_Store
+.tags*
+
+config.js

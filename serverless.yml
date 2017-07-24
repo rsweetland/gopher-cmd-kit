@@ -1,0 +1,80 @@
+service: fut-memorize
+
+frameworkVersion: ">=1.2.0 <2.0.0"
+
+plugins:
+  - serverless-offline
+
+provider:
+  name: aws
+  runtime: nodejs6.10
+  region: us-east-1
+  environment:
+    DEBUG: fut:hooks,fut
+
+functions:
+
+  # Webhooks
+  onCreate:
+    handler: handlers/onCreate.main
+    events:
+      - http:
+          path: /onCreate
+          method: post
+  onFollowup:
+    handler: handlers/onFollowup.main
+    events:
+      - http:
+          path: /onFollowup
+          method: post
+  onUpdate:
+    handler: handlers/onUpdate.main
+    events:
+      - http:
+          path: /onUpdate
+          method: post
+  onPreview:
+    handler: handlers/onPreview.main
+    events:
+      - http:
+          path: /onPreview
+          method: post
+
+  # Private Data Handlers
+  saveSettings:
+    handler: handlers/fut.saveSettings
+    events:
+      - http:
+          path: /saveSettings
+          method: post
+  getSettings:
+    handler: handlers/fut.getSettings
+    events:
+      - http:
+          path: /getSettings
+          method: get
+
+  # Auth
+  connectFut:
+    handler: handlers/fut.connectFut
+    events:
+      - http:
+          path: /connectFut
+          method: get
+  futCallback:
+    handler: handlers/fut.futCallback
+    events:
+      - http:
+          path: /futCallback
+          method: get
+  
+  #Front-End Handler
+  renderStatic:
+    handler: handlers/fut.renderFrontEnd
+    events:
+      - http:
+          path: /
+          method: get
+      - http:
+          path: /{page+}
+          method: get
