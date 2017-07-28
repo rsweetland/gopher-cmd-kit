@@ -18,7 +18,7 @@
 **/
 
 'use strict';
-const debug = require('debug')('fut-memorize:hooks:onFollowup');
+const debug = require('debug')('gopher-cmd:hooks:onFollowup');
 const _ = require('lodash');
 const moment = require('moment');
 const config = require('../config');
@@ -29,14 +29,18 @@ module.exports.main = (event, context, callback) => {
 	debug('onFollowup: Webhook Request:', event);
 	let fut = new futUtils(event, context, callback);
 
-	// Commonly retrieved information
+	// make sure this is a valid, signed webhook
+	if (!fut.webhookValidated)
+		return fut.respondError('Webhook validation failed');
+
+	// handy info we get with the webhook
 	const due = _.get(fut.parsedBody, 'followup.due');  // Due date of remiinder
-	const created = _.get(fut.parsedBody, 'followup.created'); // When it was created
+	const created = _.get(fut.parsedBody, 'followup.created'); // Creation date
 	const privateData = _.get(fut.parsedBody, 'followup.extension.private_data');  // Data stored at the user-level. Same with every webhook. Ex, user account preferences, auth tokens, etc
 	const followupData = _.get(fut.parsedBody, 'followup.extension.followup_data'); // Data stored against a particular reminder. Like a note, or a lookup key for a linked item in another system like a todo list or CRM
 
 	let response = {};
-	_.set(response, 'followup.send', true); // To send the email follouwp or not (it sends by default).
+	_.set(response, 'followup.send', true); // Suppress the followup email (it sends by default).
 	_.set(response, 'followup.due', Math.floor(moment().add(3, 'days').format('X')));  // Reset the due-date to reschedule the followup.
 	_.set(response, 'followup.extension.followup_data.my_custom_key', 'My Custom Value');  // Store some more custom data with this reminder
 
@@ -116,9 +120,10 @@ module.exports.main = (event, context, callback) => {
 	_.set(response, 'followup.body', body);
 
 
-	// The users of your extension can use it to send reminders to other people. When a reminder is scheduled 
-	// for antoher person, the email-command is placed in the "cc" field so both parties can see it. Your extension
-	// can also customize the body for your user's recipients. The same 
+	// Your command can send custom content to your user's recipients. For example, a weekly reminder for a
+	// team to update their project status. The Gopher user and creator of this command may have a view that 
+	// includes options to cancel and edit the reminder. Their recipients only have a single button "Add Status", 
+	// or just a request to reply to the email (dpeneding on how you have it set up).
 	let body_external = [
 		{
 			type: 'title', 
@@ -143,15 +148,13 @@ module.exports.main = (event, context, callback) => {
 
 	// TODO _.set(response, 'followup.replyto', );
 
-
-
 	debug('onFollowup: Webhook Response: ',  response);
 
-	if (fut.isSimulation) /// When you or a user is testing out this command with the emulator
+	// The Email Emulator in the Extension Sandbox fires the onFollowup webhook, but marks it in 
+	// simulation mode (by appending ?simulation=1 to the webhook URL). This lets you return static / demo 
+	// content when it's being tested. Eventually we'll let users simulate commands, too.
+	if (fut.isSimulation) 
 		return fut.respondOk(response); 
-
-	if (!fut.webhookValidated)
-		return fut.respondError('Webhook validation failed');
 
 	return fut.respondOk(response);
 }

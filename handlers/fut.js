@@ -1,5 +1,5 @@
 'use strict';
-const debug = require('debug')('fut-memorize:fut');
+const debug = require('debug')('gopher-cmd:fut');
 const cookie = require('cookie');
 const qs = require('qs');
 const fs = require('fs');

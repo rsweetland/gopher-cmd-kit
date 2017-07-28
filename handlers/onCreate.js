@@ -1,5 +1,5 @@
 'use strict';
-const debug = require('debug')('fut-memorize:hooks:onCreate');
+const debug = require('debug')('gopher-cmd:hooks:onCreate');
 const _ = require('lodash');
 const config = require('../config');
 const futUtils = require('./../lib/futUtils');
@@ -12,7 +12,7 @@ module.exports.main = (event, context, callback) => {
 		return fut.respondOk({});
 
 	if (!fut.webhookValidated)
-		return fut.respondError('No validate');
+		return fut.respondError('Webhoook failed to validate');
 
 	return fut.respondOk({});
 }

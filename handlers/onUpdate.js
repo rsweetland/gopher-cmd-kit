@@ -1,5 +1,5 @@
 'use strict';
-const debug = require('debug')('fut-memorize:hooks:onUpdate');
+const debug = require('debug')('gopher-cmd:hooks:onUpdate');
 const _ = require('lodash');
 const futUtils = require('./../lib/futUtils');
 const config = require('../config');

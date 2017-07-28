@@ -1,5 +1,5 @@
 'use strict';
-const debug = require('debug')('fut-memorize:hooks:onPreview');
+const debug = require('debug')('gopher-cmd:hooks:onPreview');
 const _ = require('lodash');
 const config = require('../config');
 const futUtils = require('./../lib/futUtils');
@@ -7,9 +7,8 @@ const futUtils = require('./../lib/futUtils');
 module.exports.main = (event, context, callback) => {
 	debug('onFollowup: Webhook Received:', event);
 	let fut = new futUtils(event, context, callback);
-	// if (!fut.webhookValidated)
-	// 	return fut.respondError('Webhook validation failed');
-
+	if (!fut.webhookValidated)
+		return fut.respondError('Webhook validation failed');
 		
 	var response = {
 		"valid": true,
