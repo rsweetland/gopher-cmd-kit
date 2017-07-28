@@ -9,6 +9,10 @@
     "cookie": "^0.3.1",
     "fut-node": "git+https://git@github.com:rsweetland/fut-node.git",
     "lodash": "^4.17.4",
+    "moment": "^2.18.1",
     "qs": "^6.5.0"
+  },
+  "devDependencies": {
+    "serverless-offline": "^3.15.1"
   }
 }

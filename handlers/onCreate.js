@@ -12,7 +12,7 @@ module.exports.main = (event, context, callback) => {
 		return fut.respondOk({});
 
 	if (!fut.webhookValidated)
-		return fut.repondError('No validate');
+		return fut.respondError('No validate');
 
 	return fut.respondOk({});
 }
