@@ -7,6 +7,7 @@ var FUTUtility = function() {
 
 	function isAuthorizing() {
 		if (window.location.href.indexOf(oauthCallbackPath) === -1) {
+			console.log('no callback path');
 			return false;
 		}
 		return true;

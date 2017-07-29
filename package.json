@@ -4,13 +4,17 @@
   "description": "Extension to help you remember things",
   "repository": "<replace>",
   "author": "@rsweetland",
-  "license": "MIT",
+  "license": "GPL",
+  "scripts": {
+    "dev": "DEBUG=gopher* ./node_modules/serverless/bin/serverless offline start"
+  },
   "dependencies": {
     "cookie": "^0.3.1",
     "fut-node": "git+https://git@github.com:rsweetland/fut-node.git",
     "lodash": "^4.17.4",
     "moment": "^2.18.1",
-    "qs": "^6.5.0"
+    "qs": "^6.5.0",
+    "serverless": "^1.18.1"
   },
   "devDependencies": {
     "serverless-offline": "^3.15.1"

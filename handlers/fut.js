@@ -146,7 +146,7 @@ module.exports.renderFrontEnd = (event, context, callback) => {
 	let loadedFile = fs.readFileSync(requestFilePath, 'utf-8');
 
 	if (contentType == 'text/html') {
-		loadedFile = loadedFile.replace('{{ ext_api }}', config.extUrl);
+		loadedFile = loadedFile.replace('{{ ext_api }}', config.baseUrl);
 		loadedFile = loadedFile.replace('{{ redirect_uri }}', config.redirectUri);
 	}
 

@@ -21,7 +21,7 @@ const config = require('../config');
 const futUtils = require('./../lib/futUtils');
 
 module.exports.main = (event, context, callback) => {
-	debug('onCreate: Webhook Received:', event);
+	debug('onCommand: Webhook Received:', event);
 	let fut = new futUtils(event, context, callback);
 
 	if (!fut.webhookValidated)

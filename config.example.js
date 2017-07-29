@@ -1,41 +1,48 @@
-let production = {};
+
+///////////// Update These Values /////////////////////////
+
+const baseUrlLocal = 'http://ec2a422a9d.ngrok.io';
+const baseUrlPublished = 'https://qafdeae8u9.execute-api.us-east-1.amazonaws.com/dev/';
+const clientId = 'ext_da73ab1acb6b3d06cf785ujajaa6eab850';
+const clientSecret = '4df690dfde03jskska4e0bd5c354093tq320b0515e4e6278f8faw45fae0114d697fd8f6';
+
+//////////////////////////////////////////////////////////
+
+
+let published = {};
 let local = {};
+const futURL = 'http://local.followupthen.com';  //TODO: Change to production
 
-const devServerlessURL = 'http://268dd2e7.ngrok.io';
-const productionServerlessURL = 'https://pu3sj0waah.execute-api.us-east-1.amazonaws.com/dev/';
-const futURL = 'http://staging1.www.fut.io';
-
-// DEV
+// LOCAL
 local.exports = {
-	extUrl: devServerlessURL,
+	baseUrl: baseUrlLocal,
 	fut: {
-		clientId: 'ext_318b7a0e22de3fe1b9b91654cd760700',
-		clientSecret: '83a34c94b69b4ae99c8c1e176cbb478d20cafb784b4df5ed73bf06e8a02df0bc',
+		clientId: clientId,
+		clientSecret: clientSecret,
 		tokenHost: futURL,
 		apiHost: futURL,
 		tokenPath: futURL + '/api/v1/oauth2/access_token',
-		authorizePath: futURL + '/futURL + settings/oauth2_authorize',
-		redirectUri: devServerlessURL + '/?futCallback=1',
+		authorizePath: futURL + '/settings/oauth2_authorize',
+		redirectUri: baseUrlLocal + '/?fut_authorized=1',
 		scope: 'get_user_info extension_manage_self manage_reminders',
 		state: '49afjdskfdsjlk'
 	}
 }
 
-
-// PRODUCTION
-production.exports = {
-	extUrl: productionServerlessURL,
+// PUBLISHED TO AWS
+published.exports = {
+	baseUrl: 'https://qny8eae8u9.execute-api.us-east-1.amazonaws.com/dev/',
 	fut: {
-		clientId: 'ext_318b7a0e22de3fe1b9b91654cd760700',
-		clientSecret: '83a34c94b69b4ae99c8c1e176cbb478d20cafb784b4df5ed73bf06e8a02df0bc',
+		clientId: clientId,
+		clientSecret: clientSecret,
 		tokenHost: futURL,
 		apiHost: futURL,
 		tokenPath: futURL + '/api/v1/oauth2/access_token',
 		authorizePath: futURL + '/futURL + settings/oauth2_authorize',
-		redirectUri: devServerlessURL + '/?futCallback=1',
+		redirectUri: baseUrlPublished + '/?fut_authorized=1',
 		scope: 'get_user_info extension_manage_self manage_reminders',
 		state: '49afjdskfdsjlk'
 	}
 }
 
-module.exports = process.env.IS_OFFLINE ? local.exports : production.exports;
+module.exports = process.env.IS_OFFLINE ? local.exports : published.exports;
