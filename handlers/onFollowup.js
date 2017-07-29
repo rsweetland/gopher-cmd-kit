@@ -1,16 +1,16 @@
 /**
  *
  * onFollowup Webhook
- * 
- * If your command creates a reminder, it receives this hook when 
- * the reminder triggers, just before it's sent. This lets you 
- * do useful / productive / awesome things to make this an  
+ *
+ * If your command creates a reminder, it receives this hook when
+ * the reminder triggers, just before it's sent. This lets you
+ * do useful / productive / awesome things to make this an
  * extraordinary reminder. Reminders can be recurring, too.
- * 
- * Examples: 
+ *
+ * Examples:
  * - Send recurring updates to stay in touch with someone, pulling
-     social media and contact info to include with the reminder. 
- * - Email a request for update. Funnel the reply text into 
+     social media and contact info to include with the reminder.
+ * - Email a request for update. Funnel the reply text into
  *   your project tracker.
  * - Get the weather in your inbox every day.
  * - Get the price of a product on a regular basis
@@ -44,16 +44,16 @@ module.exports.main = (event, context, callback) => {
 	_.set(response, 'followup.due', Math.floor(moment().add(3, 'days').format('X')));  // Reset the due-date to reschedule the followup.
 	_.set(response, 'followup.extension.followup_data.my_custom_key', 'My Custom Value');  // Store some more custom data with this reminder
 
-	// Add data to the body of the email reminder. 
+	// Add data to the body of the email reminder.
 	let body = [
 		{
-			type: 'title', 
+			type: 'title',
 			text: 'A Surprisingly Useful Reminder'
 		},
 		{
 			type: 'html',
 			text: `
-					<p>Pull the latest contact information, article, product pricing, server status 
+					<p>Pull the latest contact information, article, product pricing, server status
 					report, social media info. Include it all in your timely, useful reminder.
 					<p><img src="https://media.giphy.com/media/Z3l1Oo5Ro9ZSw/giphy.gif"></p>
 					`
@@ -85,13 +85,13 @@ module.exports.main = (event, context, callback) => {
 		     type: 'button',
 		     text: 'Link To Website',
 		     url: 'https://www.google.com/'
-	    },	    
+	    },
 	    {
 		     type: 'button',
 		     text: 'An Email-Based Action',
 		     action: 'my.custom.action',
 		     subject: "Fire off an API call by composing a new email",
-		     body: `The 'action', 'taskid', 'action' and contents of this email are included in webhook request 
+		     body: `The 'action', 'taskid', 'action' and contents of this email are included in webhook request
 		     		to your actions endpoint.` // Possibilities > endless
 	    },
 	    {
@@ -99,13 +99,13 @@ module.exports.main = (event, context, callback) => {
 	    	text: `<table border="0">
 	    			<tr>
 	    				<td>
-			    			<p>The <strong>Email-Action</strong> button lets you get things done 
+			    			<p>The <strong>Email-Action</strong> button lets you get things done
 			    			without leaving your inbox. Look at how fast this interaction is on a native
 			    			email client.</p>
 
-			    			<p>Use this to streamline data entry, flag tasks as done, append to lists, 
+			    			<p>Use this to streamline data entry, flag tasks as done, append to lists,
 				     		blog posts and more. All without leaving your email.</p>
-			    			
+
 			    			<p>The last section (postpone) comes by default on non-recurring reminders.</p>
 			    		</td>
 			    		<td>
@@ -121,12 +121,12 @@ module.exports.main = (event, context, callback) => {
 
 
 	// Your command can send custom content to your user's recipients. For example, a weekly reminder for a
-	// team to update their project status. The Gopher user and creator of this command may have a view that 
-	// includes options to cancel and edit the reminder. Their recipients only have a single button "Add Status", 
+	// team to update their project status. The Gopher user and creator of this command may have a view that
+	// includes options to cancel and edit the reminder. Their recipients only have a single button "Add Status",
 	// or just a request to reply to the email (dpeneding on how you have it set up).
 	let body_external = [
 		{
-			type: 'title', 
+			type: 'title',
 			text: 'Example reminder for 3rd party' // This text shows up a bit bigger
 		},
 		{
@@ -139,7 +139,7 @@ module.exports.main = (event, context, callback) => {
 		     text: 'Add Data',
 		     action: 'external.custom.action',
 		     subject: "Fire off an API call by composing a new email",
-		     body: `The 'action', 'taskid', 'action' are included in webhook request 
+		     body: `The 'action', 'taskid', 'action' are included in webhook request
 		     		to your actions endpoint.`
 	    }
 	]
@@ -150,11 +150,11 @@ module.exports.main = (event, context, callback) => {
 
 	debug('onFollowup: Webhook Response: ',  response);
 
-	// The Email Emulator in the Extension Sandbox fires the onFollowup webhook, but marks it in 
-	// simulation mode (by appending ?simulation=1 to the webhook URL). This lets you return static / demo 
+	// The Email Emulator in the Extension Sandbox fires the onFollowup webhook, but marks it in
+	// simulation mode (by appending ?simulation=1 to the webhook URL). This lets you return static / demo
 	// content when it's being tested. Eventually we'll let users simulate commands, too.
-	if (fut.isSimulation) 
-		return fut.respondOk(response); 
+	if (fut.isSimulation)
+		return fut.respondOk(response);
 
 	return fut.respondOk(response);
 }

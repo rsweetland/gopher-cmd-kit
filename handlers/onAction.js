@@ -1,32 +1,43 @@
 /**
  *
- * onCreate Webhook – Fires when Gopher creates a new new followup reminder
+ * onAction Webhook – Fires when a user executes an email-based action.
+ * See onFollowup.js for an example of how this magical button
+ * can be created. It can be added to any email that Gopher sends
+ * out.
  *
- * If your command creates a followup reminder it this webhook
- * is fired. Use it to synchronize due-dates, create add activities to
- * CRMs or project management systems.
+ * It can also be set as the "replyto" for an email that Gopher sends
+ * out. This lets you send emails that simply ask for a reply. These
+ * replies then come into this endpoint.
  *
  * Examples:
- * - Add a contact to a CRM. Reply right away with
-     social media and contact info to include with the reminder.
- * - Reply with a confirmation that some action has been done.
+ * - One-click entry for a CRM without leaving email
+ * - Mark a task as completed without leaving email
+ * - Easily create a new task
+ * -
  *
 **/
 
 'use strict';
-const debug = require('debug')('gopher-cmd:hooks:onCreate');
+const debug = require('debug')('gopher-cmd:hooks:onAction');
 const _ = require('lodash');
-const config = require('../config');
 const futUtils = require('./../lib/futUtils');
+const config = require('../config');
 
 module.exports.main = (event, context, callback) => {
-	debug('onCreate: Webhook Received:', event);
+	debug('onAction Webhook Received:', event);
 	let fut = new futUtils(event, context, callback);
-
 	if (!fut.webhookValidated)
-		return fut.respondError('Webhoook failed to validate');
+		return fut.respondError('Webhook validation failed');
+
+	// handy info we get with the webhook
+	const privateData = _.get(fut.parsedBody, 'followup.extension.private_data');  // Data stored at the user-level. Same with every webhook. Ex, user account preferences, auth tokens, etc
+	const followupData = _.get(fut.parsedBody, 'followup.extension.followup_data'); // Data stored against a particular reminder. Like a note, or a lookup key for a linked item in another system like a todo list or CRM
 
 	let response = {};
+	_.set(response, 'followup.send', true); // Andy: This triggers the followup email, correct?
+	_.set(response, 'followup.extension.followup_data.my_custom_key', 'My Custom Value');  // Store some more custom data with this reminder
+
+	// Add data to the body of the email reminder.
 	let body = [
 		{
 			type: 'title',
@@ -74,7 +85,7 @@ module.exports.main = (event, context, callback) => {
 		     action: 'my.custom.action',
 		     subject: "Fire off an API call by composing a new email",
 		     body: `The 'action', 'taskid', 'action' and contents of this email are included in webhook request
-		     		to your actions endpoint.` // Possibilities, endless. See onAction
+		     		to your actions endpoint.` // Possibilities > endless
 	    },
 	    {
 	    	type: 'html',  // note: old-fashioned tables are a reliable way layout an HTML email.
@@ -100,7 +111,7 @@ module.exports.main = (event, context, callback) => {
 	];
 
 	_.set(response, 'followup.body', body);
-
+	// TODO _.set(response, 'followup.replyto', );
 
 	if (fut.isSimulation)
 		return fut.respondOk(response);

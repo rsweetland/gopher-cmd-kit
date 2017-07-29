@@ -15,6 +15,12 @@ provider:
 functions:
 
   # Webhooks
+  onCommand:
+    handler: handlers/onCommand.main
+    events:
+      - http:
+          path: /onCommand
+          method: post
   onCreate:
     handler: handlers/onCreate.main
     events:
@@ -39,6 +45,25 @@ functions:
       - http:
           path: /onPreview
           method: post
+  onAction:
+    handler: handlers/onAction.main
+    events:
+      - http:
+          path: /onAction
+          method: post
+  onDelete:
+    handler: handlers/onDelete.main
+    events:
+      - http:
+          path: /onDelete
+          method: post
+  onUninstall:
+    handler: handlers/onUninstall.main
+    events:
+      - http:
+          path: /onUninstall
+          method: post
+
 
   # Private Data Handlers
   saveSettings:

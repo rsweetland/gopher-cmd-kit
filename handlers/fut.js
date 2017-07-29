@@ -1,3 +1,10 @@
+/**
+ *
+ * Internal Helpers. You shouldn't have to change this.
+ *
+ *
+**/
+
 'use strict';
 const debug = require('debug')('gopher-cmd:fut');
 const cookie = require('cookie');
