@@ -15,7 +15,7 @@
 **/
 
 'use strict';
-const debug = require('debug')('gopher-cmd:hooks:onCreate');
+const debug = require('debug')('gopher-cmd:hooks:onCommand');
 const _ = require('lodash');
 const config = require('../config');
 const futUtils = require('./../lib/futUtils');
@@ -28,12 +28,50 @@ module.exports.main = (event, context, callback) => {
 		return fut.respondError('Webhoook failed to validate');
 
 	// handy info we get with the webhook
-	const privateData = _.get(fut.parsedBody, 'followup.extension.private_data');  // Data stored at the user-level. Same with every webhook. Ex, user account preferences, auth tokens, etc
-	const followupData = _.get(fut.parsedBody, 'followup.extension.followup_data'); // Data stored against a particular reminder. Like a note, or a lookup key for a linked item in another system like a todo list or CRM
+  // Data stored at the user-level. Same with every webhook. Ex, user account preferences, auth tokens, etc
+	const futAccessToken = _.get(fut.parsedBody, 'extension.private_data.fut_access_token', '');
+	const requestSource = _.get(fut.parsedBody, 'followup.source', {});
+
+  if (!futAccessToken) {
+  }
+
+  const futClient = fut.getClient(futAccessToken);
+
+  // ex: ['remind.me.1hour', 'gopher.email']
+  const recipientSplit = _.get(requestSource, 'recipient', '').split('@');
+
+  // ex: ['remind', 'me', '1hour']
+  const commandSplit = recipientSplit[0].split('.');
+
+  // ex: '1hour'
+  const futFormat = commandSplit[commandSplit.length - 1];
+
+  const params = {
+    source: {
+      recipient_server: futFormat + '@' + recipientSplit[1], // ex: 1hour@gopher.email
+      recipient_to: _.get(requestSource, 'headers.to', ''),
+      from: _.get(requestSource, 'from', ''),
+      body: _.get(requestSource, 'body', ''),
+      type: 'api',
+      subject: _.get(requestSource, 'subject', ''),
+    }
+  };
+
+  if (_.has(requestSource, 'headers.cc')) {
+    params.source['recipients_cc'] = _.get(requestSource, 'headers.cc', '');
+  }
+
+  if (_.has(requestSource, 'headers.bcc')) {
+    params.source['recipients_bcc'] = _.get(requestSource, 'headers.bcc', '');
+  }
+
+  debug('futReminderAPIParams', params);
+
+  futClient.createFut(params, function(err, createFutResponse) {
+    debug('err', err);
+  });
 
 	let response = {};
-	_.set(response, 'followup.send', true); // Andy: This triggers the followup email, correct?
-	_.set(response, 'followup.extension.followup_data.my_custom_key', 'My Custom Value');  // Store some more custom data with this reminder
 
 	// Add data to the body of the email reminder.
 	let body = [
