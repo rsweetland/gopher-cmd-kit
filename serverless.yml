@@ -19,7 +19,7 @@ functions:
     handler: handlers/onCommand.main
     events:
       - http:
-          path: /commands
+          path: /onCommand
           method: post
   onCreate:
     handler: handlers/onCreate.main
@@ -49,7 +49,7 @@ functions:
     handler: handlers/onAction.main
     events:
       - http:
-          path: /action
+          path: /onAction
           method: post
   onDelete:
     handler: handlers/onDelete.main
