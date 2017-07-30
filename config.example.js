@@ -31,7 +31,7 @@ local.exports = {
 
 // PUBLISHED TO AWS
 published.exports = {
-	baseUrl: 'https://qny8eae8u9.execute-api.us-east-1.amazonaws.com/dev/',
+	baseUrl: baseUrlPublished,
 	fut: {
 		clientId: clientId,
 		clientSecret: clientSecret,
