@@ -49,7 +49,7 @@ module.exports.main = (event, context, callback) => {
   const params = {
     source: {
       recipient_server: futFormat + '@' + recipientSplit[1], // ex: 1hour@gopher.email
-      recipient_to: _.get(requestSource, 'headers.to', ''),
+      recipients_to: _.get(requestSource, 'headers.to', ''),
       from: _.get(requestSource, 'from', ''),
       body: _.get(requestSource, 'body', ''),
       type: 'api',
@@ -67,9 +67,9 @@ module.exports.main = (event, context, callback) => {
 
   debug('futReminderAPIParams', params);
 
-  futClient.createFut(params, function(err, createFutResponse) {
-    debug('err', err);
-  });
+  futClient.createFut(params)
+  .then((res) => debug('Followup Created API Response: ', res))
+  .catch((err) => debug('Followup API Error: ', err));
 
 	let response = {};
 
