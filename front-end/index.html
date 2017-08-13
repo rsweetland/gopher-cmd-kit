@@ -21,20 +21,69 @@
 			<section class="row hide" id="memorize-settings">
 				<div class="col-sm-7">
 					<form class="form-horizontal settings-form" method="POST" action="/saveSettings">
-						<h1>Settings</h1>
-							<div class="form-group">
-								<label for="select" class="col-lg-2 control-label">Frequency Multiplier</label>
-								<div class="col-lg-10">
-									<input type="number" step=".1" min=".1" max="3" class="fut-setting form-control" id="memorize_frequency_multiplier">
-									<span class="help-block">A multiplier to adjust the frequency of reminder emails. For example, .5 will be twice as frequent, and 2 will be half as frequent.</span>
-								</div>
-							</div>
-							<div class="form-group">
-								<div class="col-lg-10 col-lg-offset-2">
-									<button type="submit" class="btn btn-primary" id="save_settings">Submit</button>
-								</div>
-							</div>
-					</form>
+		              <h1>Settings</h1>
+		              <fieldset>
+		                <div class="form-group">
+		                  <label for="inputEmail" class="col-lg-2 control-label">Email</label>
+		                  <div class="col-lg-10">
+		                    <input type="text" class="form-control fut-setting" id="inputEmail" placeholder="Email">
+		                  </div>
+		                </div>
+		                <div class="form-group">
+		                  <label for="inputPassword" class="col-lg-2 control-label">Password</label>
+		                  <div class="col-lg-10">
+		                    <input type="password" class="form-control fut-setting" id="inputPassword" placeholder="Password">
+		                    <div class="checkbox">
+		                      <label>
+		                        <input class="fut-setting" type="checkbox" id="inputCheckbox"> Checkbox
+		                      </label>
+		                    </div>
+		                  </div>
+		                </div>
+		                <div class="form-group">
+		                  <label for="textArea" class="col-lg-2 control-label">Textarea</label>
+		                  <div class="col-lg-10">
+		                    <textarea class="form-control fut-setting" rows="3" id="textArea"></textarea>
+		                    <span class="help-block">A longer block of help text that breaks onto a new line and may extend beyond one line.</span>
+		                  </div>
+		                </div>
+		                <div class="form-group">
+		                  <label class="col-lg-2 control-label">Radios</label>
+		                  <div class="col-lg-10">
+		                    <div class="radio">
+		                      <label>
+		                        <input class="fut-setting" type="radio" name="optionsRadios" id="optionsRadios1" value="option1" checked="">
+		                        Option one is this
+		                      </label>
+		                    </div>
+		                    <div class="radio">
+		                      <label>
+		                        <input class="fut-setting" type="radio" name="optionsRadios" id="optionsRadios2" value="option2">
+		                        Option two can be something else
+		                      </label>
+		                    </div>
+		                  </div>
+		                </div>
+		                <div class="form-group">
+		                  <label for="select" class="col-lg-2 control-label">Selects</label>
+		                  <div class="col-lg-10">
+		                    <select class="fut-setting form-control" id="select">
+		                      <option>1</option>
+		                      <option>2</option>
+		                      <option>3</option>
+		                      <option>4</option>
+		                      <option>5</option>
+		                    </select>
+		                    <br>
+		                  </div>
+		                </div>
+		                <div class="form-group">
+		                  <div class="col-lg-10 col-lg-offset-2">
+		                    <button type="submit" class="btn btn-primary" id="save_settings">Submit</button>
+		                  </div>
+		                </div>
+		              </fieldset>
+		            </form>
 				</div>
 				<div class="col-sm-5">
 					<div class="well">
