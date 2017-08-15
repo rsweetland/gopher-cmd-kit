@@ -1,0 +1,112 @@
+service: gopher-cmd
+
+frameworkVersion: ">=1.2.0 <2.0.0"
+
+plugins:
+  - serverless-offline
+
+provider:
+  name: aws
+  runtime: nodejs6.10
+  region: us-east-1
+  environment:
+    DEBUG: gopher*
+
+functions:
+
+  # Webhooks
+  onCommand:
+    handler: handlers/onCommand.main
+    events:
+      - http:
+          path: /onCommand
+          method: post
+  onRequestOptions:
+    handler: handlers/onRequestOptions.main
+    events:
+      - http:
+          path: /onRequestOptions
+          method: post
+  onValidateCommandFormat:
+    handler: handlers/onValidateCommandFormat.main
+    events:
+      - http:
+          path: /onValidateCommandFormat
+          method: post
+  onAction:
+    handler: handlers/onAction.main
+    events:
+      - http:
+          path: /onAction
+          method: post
+  onFollowup:
+    handler: handlers/onFollowup.main
+    events:
+      - http:
+          path: /onFollowup
+          method: post
+  onFollowupCreate:
+    handler: handlers/onFollowupCreate.main
+    events:
+      - http:
+          path: /onCreate
+          method: post
+  onFollowupUpdate:
+    handler: handlers/onFollowupUpdate.main
+    events:
+      - http:
+          path: /onUpdate
+          method: post
+  onFollowupDelete:
+    handler: handlers/onFollowupDelete.main
+    events:
+      - http:
+          path: /onDelete
+          method: post
+  onUninstall:
+    handler: handlers/onUninstall.main
+    events:
+      - http:
+          path: /onUninstall
+          method: post
+
+
+  # Private Data Handlers
+  saveSettings:
+    handler: handlers/gopher.saveSettings
+    events:
+      - http:
+          path: /saveSettings
+          method: post
+  getSettings:
+    handler: handlers/gopher.getSettings
+    events:
+      - http:
+          path: /getSettings
+          method: get
+
+  # Auth
+  connectGopher:
+    handler: handlers/gopher.connectGopher
+    events:
+      - http:
+          path: /connectGopher
+          method: get
+          cors: true
+  gopherCallback:
+    handler: handlers/gopher.gopherCallback
+    events:
+      - http:
+          path: /gopherCallback
+          method: get
+  
+  #Front-End Handler
+  renderStatic:
+    handler: handlers/gopher.renderFrontEnd
+    events:
+      - http:
+          path: /
+          method: get
+      - http:
+          path: /{page+}
+          method: get

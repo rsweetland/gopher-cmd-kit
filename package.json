@@ -1,0 +1,36 @@
+{
+  "name": "gopher-cmd",
+  "version": "1.0.0",
+  "description": "Extension to help you remember things",
+  "repository": "<replace>",
+  "author": "@rsweetland",
+  "license": "Proprietary",
+  "scripts": {
+    "dev": "DEBUG=gopher-cmd:hooks:onCommand ./node_modules/serverless/bin/serverless offline start",
+    "mock": "DEBUG=gopher-cmd:hooks:onCommand TESTING=true ./node_modules/serverless/bin/serverless offline start",
+    "logs": "sls logs -f onCommand -t",
+    "test": "TESTING=true; DEBUG=gopher* mocha test/*.js",
+    "autotest": "TESTING=true; DEBUG=gopher* ./node_modules/.bin/supervisor -q -n exit -x ./node_modules/.bin/mocha -- -b",
+    "ngrok": "ngrok http localhost:3000",
+    "logp": "sls logs --stage prod -t -f"
+  },
+  "dependencies": {
+    "cookie": "^0.3.1",
+    "deasync": "^0.1.10",
+    "fut-node": "git+https://git@github.com:rsweetland/fut-node.git#0.2",
+    "gopher-helper": "git+https://git@github.com:rsweetland/gopher-helpers.git",
+    "lodash": "^4.17.4",
+    "logdna": "^1.3.4",
+    "mixpanel": "^0.7.0",
+    "moment": "^2.18.1",
+    "qs": "^6.5.0",
+    "serverless": "^1.18.1"
+  },
+  "devDependencies": {
+    "chai": "^4.1.0",
+    "nock": "^9.0.14",
+    "serverless-offline": "^3.15.1",
+    "supertest": "^3.0.0",
+    "supervisor": "^0.12.0"
+  }
+}

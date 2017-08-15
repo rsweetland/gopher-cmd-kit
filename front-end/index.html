@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<link href="https://maxcdn.bootstrapcdn.com/bootswatch/3.3.7/flatly/bootstrap.min.css" rel="stylesheet" integrity="sha384-+ENW/yibaokMnme+vBLnHMphUYxHs34h9lpdbSLuAwGkOKFRl4C34WkjazBtb7eT" crossorigin="anonymous">
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/nprogress/0.2.0/nprogress.min.css" />
+		<link rel="stylesheet" type="text/css" href="./app.css">
+	</head>
+	<body>
+		<nav class="navbar navbar-fixed-top">
+			<h4><strong>Gopher Command</strong></h4>
+		</nav>
+		<div class="container" id="content">
+			<div class="alert alert-dismissible alert-warning hide" id="error">
+				<button type="button" class="close" data-dismiss="alert">&times;</button>
+			</div>
+
+			<div class="alert alert-dismissible alert-success hide" id="success">
+				<button type="button" class="close" data-dismiss="alert">&times;</button>
+			</div>
+
+			<section class="row hide" id="setup-complete">
+				<div class="col-sm-12">
+					<h1>Setup Complete!</h1>
+					<h2 class="lead">You can close this window and return to Gmail.</h2>
+					<!-- <button type="button" class="btn btn-primary" onClick="this.innerHtml('123');">Settings / Instructions</button> -->
+				</div>
+			</section>
+
+			<section class="row hide" id="command-settings">
+				<div class="col-sm-7">
+					<h1>Reminder Settings</h1>
+					<form class="form-horizontal settings-form" method="POST" action="/saveSettings">
+		                <div class="form-group">
+	                    <div class="checkbox">
+	                      <label>
+	                        <input class="fut-setting" type="checkbox" id="confirmations_off"> Turn off scheduling confirmation messages.
+	                      </label>
+	                    </div>
+	                    </div>
+		                <div class="form-group">
+		                  <label for="inputEmail" class="col-lg-2 control-label">Default Option</label>
+		                  <div class="col-lg-10">
+		                    <input type="text" class="form-control fut-setting" id="default_command" placeholder="Default: remind.me.3weekdays" >
+		                  <span class="help-block">Default options when you just type "remind".</span>
+		                  </div>
+		                </div>
+		                <div class="form-group">
+		                  <div class="col-lg-10 col-lg-offset-2">
+		                    <button type="submit" class="btn btn-primary" id="save_settings">Submit</button>
+		                  </div>
+		                </div>
+	                </form>
+				</div>
+
+				<div class="col-sm-5">
+					<div class="well">
+						<h3>How To Use</h3>
+						<p><code><strong>remind</strong>.[who].[when]</code></p>
+						<p>Create a email reminder for yourself or another.</p>
+						<p>What do you think?<a href="mailto:help@humans.fut.io">help@humans.fut.io</a></p>
+					</div>
+<!-- 					<p class="lead">Head on over to <a href="https://www.gopher.email">the website</a> to view and manage your email reminders.</p>
+					<button href="https://www.gopher.email/pending" class="btn btn-primary">My Reminders</button> -->
+
+				</div>
+			</section>
+
+
+		<!--Jquery, Bootstrap -->
+		<script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+		<!--js-cookie-->
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/js-cookie/2.1.4/js.cookie.min.js"></script>
+		<!--moment, lodash, nprogress -->
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.18.1/moment.js"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.4/lodash.min.js"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/nprogress/0.2.0/nprogress.min.js"></script>
+		<!--app-->
+		<script src="./gopher.js"></script>
+		<script src="./app.js"></script>
+	</body>
+</html>
