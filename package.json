@@ -6,7 +6,7 @@
   "author": "@rsweetland",
   "license": "Proprietary",
   "scripts": {
-    "dev": "DEBUG=gopher-cmd:hooks:onCommand ./node_modules/serverless/bin/serverless offline start",
+    "dev": "DEBUG=gopher-cmd:hooks:onAction ./node_modules/serverless/bin/serverless offline start",
     "mock": "DEBUG=gopher-cmd:hooks:onCommand TESTING=true ./node_modules/serverless/bin/serverless offline start",
     "logs": "sls logs -f onCommand -t",
     "test": "TESTING=true; DEBUG=gopher* mocha test/*.js",

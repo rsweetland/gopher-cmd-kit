@@ -119,39 +119,42 @@ module.exports.main = (event, context, callback) => {
 		default:
 			logger.log('unknown action email received', {level: 'warn', meta: {event: event}});
 			debug(gopher.source.from);
-			return gopher.respondOk({
-				followup: {
-					subject: "Action Email Error", // Best practice: Always put original subject in the action error email so the user find it.
-					body: [
-						{
-							type: 'title',
-							text: "Sorry, we couldn't understand that action"
-						},
-						{
-							type: 'html',
-							text:
-							`
-							<p>It looks like you sent an action that we didn't recognize.</p>
-							<p>If this action was related to a followup, the subject will be provided here: </p>
 
-							<p> ${gopher.source.subject} </p>
+			return gopher.respondOk({});
 
-							<p>Would you hitting reply and letting us know about the error?</p>
-							<p>We're adding some additional information to help track down the issue:</p>
-							<p>----<br />
-							Action: ${gopher.fullAction}<br />
-							From: ${gopher.source.from}<br />
-							Followup Id: ${gopher.followup.id}<br />
-							</p>
+			// return gopher.respondOk({
+			// 	followup: {
+			// 		subject: "Action Email Error", // Best practice: Always put original subject in the action error email so the user find it.
+			// 		body: [
+			// 			{
+			// 				type: 'title',
+			// 				text: "Sorry, we couldn't understand that action"
+			// 			},
+			// 			{
+			// 				type: 'html',
+			// 				text:
+			// 				`
+			// 				<p>It looks like you sent an action that we didn't recognize.</p>
+			// 				<p>If this action was related to a followup, the subject will be provided here: </p>
 
-							<p> - Team Gopher </p>
+			// 				<p> ${gopher.source.subject} </p>
 
-							`
-						}
-					]
-				},
-				replyto: 'help+gopher@humans.fut.io'
-			});
+			// 				<p>Would you hitting reply and letting us know about the error?</p>
+			// 				<p>We're adding some additional information to help track down the issue:</p>
+			// 				<p>----<br />
+			// 				Action: ${gopher.fullAction}<br />
+			// 				From: ${gopher.source.from}<br />
+			// 				Followup Id: ${gopher.followup.id}<br />
+			// 				</p>
+
+			// 				<p> - Team Gopher </p>
+
+			// 				`
+			// 			}
+			// 		]
+			// 	},
+			// 	replyto: 'help+gopher@humans.fut.io'
+			// });
 		break;
 	}
 
