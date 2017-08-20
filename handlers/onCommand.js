@@ -18,7 +18,7 @@ const GopherHelper = require('gopher-helper');
 const Mixpanel = require('mixpanel');
 const mixpanel = Mixpanel.init(config.mixpanel);
 
-// process.env.TESTING = true;
+process.env.TESTING = true;
 
 module.exports.main = (event, context, callback) => {
 	if (process.env.TESTING) {
@@ -32,8 +32,16 @@ module.exports.main = (event, context, callback) => {
 		return gopher.respondError('Gopher is having connection troubles');
 	}
 
-	let sourceEmail = gopher.source.from;
-	let parsedName = sourceEmail;
+	var sourceEmail = gopher.parsedBody.action_data.source.from;
+	var parsedName = sourceEmail;
+
+	try {
+		if (sourceEmail.indexOf('<') > -1) {
+			parsedName = sourceEmail.split('<')[0].trim().split(' ')[0];
+		}
+	} catch (e) {
+		parsedName = sourceEmail;
+	}
 
 	let email = {
 		subject: 'Gopher Demo Day Email',
