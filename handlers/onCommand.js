@@ -18,7 +18,7 @@ const GopherHelper = require('gopher-helper');
 const Mixpanel = require('mixpanel');
 const mixpanel = Mixpanel.init(config.mixpanel);
 
-process.env.TESTING = true;
+// process.env.TESTING = true;
 
 module.exports.main = (event, context, callback) => {
 	if (process.env.TESTING) {
