@@ -26,7 +26,7 @@ describe("onCommand webhook", function () {
 
   it("fires", function (done) {
     request
-      .post(config.baseUrl + 'onCommand')
+      .post(config.baseUrl + '/onCommand')
       .then(function (res) {
         // debug(res);
         // expect(res.body.status).to.equal(200);
@@ -44,7 +44,7 @@ describe("onFollowup webhook", function () {
 
   it("fires", function (done) {
     request
-      .post(config.baseUrl + 'onFollowup')
+      .post(config.baseUrl + '/onFollowup')
       .then(function (res) {
         // debug(res);
         // expect(res.body.status).to.equal(200);

@@ -1,5 +1,4 @@
-// global onAuthSuccess()
- 
+
 var GopherUtility = function() {
 	var oauthCallbackPath = 'gopher_authorized';
 	var baseUrl = '{{ baseUrl }}';
@@ -33,7 +32,7 @@ var GopherUtility = function() {
 	}
 
 	function displayError(err) {
-		$('#error').removeClass('hide').append("<p>Error: " + JSON.stringify(err) + "</p>");
+		$('#error').removeClass('hide').append("<p>Error: " + err + "</p>");
 		console.log(err);
 	}
 
@@ -59,11 +58,8 @@ var GopherUtility = function() {
 
 		$.ajax(getAuthTokenRequest)
 		.done(function (res) {
-			displaySuccess("Successfully authorized the Gopher Reminder Service.");
+			displaySuccess("Successfully Authorized Gopher. Now connecting Gopher to Google Calendar via OAuth.io...");
 			Cookies.set('fut_access_token', res.gopherAccessToken);
-			console.log('access token', res.gopherAccessToken);
-			onAuthSuccess(); //global
-			console.log(res);
 			NProgress.done();
 			cb(true);
 		}).fail(function (err) {
@@ -92,7 +88,7 @@ var GopherUtility = function() {
 			window.location.assign(res.authUri);
 			NProgress.done();
 		}).fail(function (err) {
-			displayError("There was an error connecting to Gopher: " + err.responseText);
+			displayError("<p>There was an error connecting to Gopher: " + err.responseText + "</p>");
 			NProgress.done();
 		});
 	}
@@ -104,7 +100,7 @@ var GopherUtility = function() {
 			dataType: 'json',
 			contentType: 'application/json; charset=utf-8',
 			crossDomain: true,
-			beforeSend: function() { NProgress.start(); },
+			beforeSend: function() {NProgress.start();},
 		};
 		$.ajax(getSettings)
 		.done(function(res) {

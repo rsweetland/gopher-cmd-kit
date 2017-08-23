@@ -1,0 +1,42 @@
+var baseUrlLocal = '';
+var clientId = '';
+var clientSecret = '';
+var futURL = '';
+
+if (process.env.IS_OFFLINE) {
+	///////////// DEV ///////////////////////////////
+    baseUrlLocal = 'http://introcmd.ngrok.io/';
+    clientId = 'ext_f55d4d696b58b00da131b38b2d512c2c';
+    clientSecret = 'f74ad5ea87cac9743d6207737c87a2201a99d4539205df96d41bc4c559bdf88c';
+	futURL = 'https://www.gopher.email/';  //TODO: Change to production
+	/////////////////////////////////////////////////
+} else {
+	///////////// PRODUCTION /////////////////////////
+	baseUrlLocal = 'https://7njj20rs0i.execute-api.us-east-1.amazonaws.com/prod/';
+	clientId = 'ext_f55d4d696b58b00da131b38b2d512c2c';
+	clientSecret = 'f74ad5ea87cac9743d6207737c87a2201a99d4539205df96d41bc4c559bdf88c';
+	futURL = 'https://www.gopher.email/'; 
+	/////////////////////////////////////////////////    
+}
+
+config = {
+	templateTokens: {
+		baseUrl: baseUrlLocal,
+		redirectUri: baseUrlLocal + '?gopher_authorized=1'
+	},
+	fut: {
+		clientId: clientId,
+		clientSecret: clientSecret,
+		tokenHost: futURL,
+		apiHost: futURL,
+		tokenPath: futURL + 'api/v1/oauth2/access_token',
+		authorizePath: futURL + 'settings/oauth2_authorize',
+		redirectUri: baseUrlLocal + '?gopher_authorized=1',
+		scope: 'get_user_info extension_manage_self manage_reminders',
+		state: '49afjdskfdsjlk'
+	},
+	logDnaKey: '5e8a2bd4b990f0c82d5a932fc805cf8a',
+	mixpanel: '4a9d89164f13f9771f7e3a5399902816'
+}
+
+module.exports = config;

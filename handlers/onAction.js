@@ -1,40 +1,48 @@
 /**
  *
  * onAction Webhook – Fires when a user executes an email-based action.
- * See onFollowup.js and onCommand.js for an example of how this magical button
- * can be created. An email-action can be added to any email that Gopher sends.
+ * See onFollowup.js for an example of how this magical button
+ * can be created. It can be added to any email that Gopher sends
+ * out.
  *
- * It can also be set as the "replyto" for emails that Gopher sends.
- * This lets you send emails that simply ask for a reply, or that
- * have a dialog with the user. All of that arrives here.
+ * It can also be set as the "replyto" for an email that Gopher sends
+ * out. This lets you send emails that simply ask for a reply. These
+ * replies then come into this endpoint.
  *
  * Examples:
  * - One-click entry for a CRM without leaving email
  * - Mark a task as completed without leaving email
  * - Easily create a new task
+ * -
  *
 **/
 
 'use strict';
-const debug = require('debug')('gopher-cmd:hooks:onAction');
+const debug = require('debug')('gopher-intro:hooks:onAction');
 const _ = require('lodash');
 const GopherHelper = require('gopher-helper');
+const moment = require('moment-timezone');
+const striptags = require('striptags');
 const config = require('../config');
+const logger = require('../lib/logger');
 const Mixpanel = require('mixpanel');
 const mixpanel = Mixpanel.init(config.mixpanel);
-const logger = require('../lib/logger');
+const async = require('async');
 
-// process.env.TESTING = true;
+// process.env.TESTING = true;	
 
 module.exports.main = (event, context, callback) => {
 	if (process.env.TESTING) {
-		event = require('../test/mock.js').onActionEvent;
+		console.log('mock');
+		var mock = require('../test/mock');
+		event = mock.onAction;
 	}
 
 	debug('onAction Webhook Received:', event);
 	let gopher = new GopherHelper(event, context, callback, config.fut);
 
-	if (!gopher.webhookValidated)
+	// make sure this is a valid, signed webhook
+	if (!process.env.TESTING && !gopher.webhookValidated)
 		return gopher.respondError('Webhook validation failed');
 
 	var email = {
@@ -42,8 +50,37 @@ module.exports.main = (event, context, callback) => {
 		body: []
 	};
 
-	switch (gopher.action) {
+	console.log('onAction', gopher.action);
 
+	let actionParams = gopher.actionParams;
+
+	switch (gopher.action) {
+			case 'postpone':
+				let newDate = _.get(actionParams, '[0]', null);
+				newDate = '1sec-intro';
+
+				debug('In Postpone. Params are: ', gopher.actionParams);
+
+				if(_.isEmpty(gopher.followup.id) || _.isEmpty(newDate)) {
+					return gopher.respondError("Sorry, for some reason your followup information didn't come through. Please try again or contact support.");
+				}
+
+				if(_.get(gopher.userData, 'fut_access_token')) {
+					var followupClient = gopher.getClient(_.get(gopher.userData, 'fut_access_token'));
+				} else {
+					return gopher.respondOk({  soft_errors: [ { message: "Your Gopher login information was incorrect or could not be located. Please login"}]});
+				}
+
+				followupClient.updateFut(gopher.followup.id, {reschedule: 1, fut_format: newDate})
+				.then((res) => {
+					debug('Successfully Rescheudled', res);
+					return gopher.respondOk();
+				})
+				.catch((err) => {
+					debug('Error Rescheduling: ', err);
+					return gopher.respondError(err);
+				});
+			break;
 		case 'salesforce':
 			email.subject = 'Gopher Salesforce Demo';
 
@@ -189,6 +226,7 @@ module.exports.main = (event, context, callback) => {
 			});
 
 			gopher.sendEmail(email);
+			gopher.respondOk();
 			break;
 		case 'producthunt':
 			let products = [
@@ -287,6 +325,7 @@ module.exports.main = (event, context, callback) => {
 			});
 			
 			gopher.sendEmail(email);
+			gopher.respondOk();
 			break;
 		case 'github':
 			gopher.sendEmail({
@@ -454,10 +493,10 @@ module.exports.main = (event, context, callback) => {
 					},
 				]
 			});
+			gopher.respondOk();
 			break;
 		default:
 			break;
 	}
 
-	gopher.respondOk();
 }

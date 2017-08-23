@@ -13,3 +13,5 @@ app/bundle.js
 .tags*
 
 config.js
+
+test/mock.js

@@ -1,6 +1,6 @@
 /**
  *
- * Helpers for standard stuff. You shouldn't have to change this.
+ * Internal Helpers. You shouldn't have to change this.
  *
  *
 **/
@@ -14,46 +14,42 @@ const path = require('path');
 const _ = require('lodash');
 const GopherHelper = require('gopher-helper');
 const config = require('./../config');
-const logger = require('./../lib/logger');
 
 module.exports.saveSettings = (event, context, callback) => {
 	let gopher = new GopherHelper(event, context, callback, config.fut);
 
 	if (!event.headers.Cookie)
-		return respondError('Please login before submitting request');
+		return gopher.respondError('Please login before submitting request');
 	
-	const gopherAccessToken = cookie.parse(event.headers.Cookie).fut_access_token;
+	const futAccessToken = cookie.parse(event.headers.Cookie).fut_access_token;
 
-	if (!gopherAccessToken)
+	if (!futAccessToken)
 		return gopher.respondError('Please login first!');
 
-	const gopherClient = gopher.getClient(gopherAccessToken);
+	const futClient = gopher.getClient(futAccessToken);
 	const settings = gopher.parsedBody;
 
-	gopherClient.saveExtData(settings)
+	futClient.saveExtData(settings)
 	.then(gopher.respondOk)
 	.catch(gopher.respondError)
 }
 
 module.exports.getSettings = (event, context, callback) => {
-	debug('settings requested');
-	logger.log('remind: settings requested');
 	let gopher = new GopherHelper(event, context, callback, config.fut);
-	debug('gopher helper created');
 
 	if(!event.headers.Cookie)
 		return gopher.respondError('getSettings: Please login before submitting request');
 
-	const gopherAccessToken = cookie.parse(event.headers.Cookie).fut_access_token;
+	const futAccessToken = cookie.parse(event.headers.Cookie).fut_access_token;
 
-	debug('gopherAccessToken', gopherAccessToken);
+	debug('futAccessToken', futAccessToken);
 
-	if(!gopherAccessToken)
+	if(!futAccessToken)
 		return gopher.respondError('Please login first!');
 
-	const gopherClient = gopher.getClient(gopherAccessToken);
+	const futClient = gopher.getClient(futAccessToken);
 
-	gopherClient.getExtData()
+	futClient.getExtData()
 	.then(gopher.respondOk)
 	.catch(gopher.respondError)
 };
@@ -62,9 +58,9 @@ module.exports.getSettings = (event, context, callback) => {
 module.exports.connectGopher = (event, context, callback) => {
 	let gopher = new GopherHelper(event, context, callback, config.fut);
 
-	const gopherClient = gopher.getClient();
-	const authUri = gopherClient.getAuthorizationUri().uri;
-	const state = gopherClient.getAuthorizationUri().state;
+	const futClient = gopher.getClient();
+	const authUri = futClient.getAuthorizationUri().uri;
+	const state = futClient.getAuthorizationUri().state;
 
 	const body = {
 		authUri: authUri,
@@ -74,9 +70,7 @@ module.exports.connectGopher = (event, context, callback) => {
 	callback(null, {
 		statusCode: 200,
 		headers: {
-		    "Access-Control-Allow-Origin" : "*", 
-		    "Access-Control-Allow-Credentials" : true
-		},		
+		},
 		body: JSON.stringify(body),
 	})
 }
@@ -91,10 +85,10 @@ module.exports.gopherCallback = (event, context, callback) => {
 
 	function saveAccessToken(token) {
 		debug('code', event.queryStringParameters.code);
-		debug('futCallback: saveAccessToken: token', token);
+		debug('gopherCallback: saveAccessToken: token', token);
 		gopherAccessToken = token;
-		let gopherClient = gopher.getClient(token);
-		return gopherClient.saveExtData({fut_access_token: token}); //so access token now will be posted with each webhook
+		let futClient = gopher.getClient(token);
+		return futClient.saveExtData({fut_access_token: token}); //so access token now will be posted with each webhook
 	}
 
 	function sendResult() {
@@ -104,21 +98,21 @@ module.exports.gopherCallback = (event, context, callback) => {
 				},
 				body: JSON.stringify({message: "Success!", gopherAccessToken: gopherAccessToken})
 			}
-			debug('futCallback ok response', response);
+			debug('gopherCallback ok response', response);
 			callback(null, response);
 	}
 
 	function handleError(err) {
-		debug('futCallback Error: ', err);
-		debug('futCallback gopherClient', gopherClient);
+		debug('gopherCallback Error: ', err);
+		debug('gopherCallback futClient', futClient);
 		callback(null, {
 			statusCode: 400,
-			body: `There was a problem obtaining authorization from FollowUpThen based on this code: ${event.queryStringParameters.code}. Please close this window and try again. You can also clear your cookies, uninstall and re-install the command.`
+			body: `There was a problem obtaining authorization from FollowUpThen based on this code: ${event.queryStringParameters.code}. Please try clearing your cookies, uninstalling and reinstalling the extension.`
 		})
 	}
 
-	let gopherClient = gopher.getClient();
-	gopherClient.getAccessToken(event.queryStringParameters.code)
+	let futClient = gopher.getClient();
+	futClient.getAccessToken(event.queryStringParameters.code)
 		.then(saveAccessToken)
 		.then(sendResult)
 		.catch(handleError);
@@ -127,6 +121,8 @@ module.exports.gopherCallback = (event, context, callback) => {
 
 //Renders static assets from the 'front-end' directory.
 module.exports.renderFrontEnd = (event, context, callback) => {
+	debug('request path', event.path);
+
 	let gopher = new GopherHelper(event, context, callback, config.fut);
 
 	let requestFileName = event.pathParameters ? event.pathParameters.page : 'index.html';
@@ -138,7 +134,6 @@ module.exports.renderFrontEnd = (event, context, callback) => {
 	}
 
 	if (!fs.existsSync(requestFilePath)) {
-		logger.log('404 request error', {meta: {event: JSON.stringify(event)}});
 		return callback(null, {
 			statusCode: 404,
 			headers: {
@@ -153,11 +148,11 @@ module.exports.renderFrontEnd = (event, context, callback) => {
 	let loadedFile = fs.readFileSync(requestFilePath, 'utf-8');
 
 	if (contentType == 'text/html') {
-		loadedFile = loadedFile.replace('{{ baseUrl }}', config.baseUrl);
-		loadedFile = loadedFile.replace('{{ redirectUri }}', config.redirectUri);
+		_.each(config.templateTokens, (value, slug) => {
+			loadedFile = loadedFile.replace(`{{ ${slug} }}`, value);
+		});
 	}
 
-	logger.log('static page load', {meta: {path: event.path}});
 	return callback(null, {
 		statusCode: 200,
 		headers: {

@@ -1,83 +1,70 @@
 /**
  *
- * onCommand Webhook – Fires on every Gopher Command (ex: command.param.param@gopher.email)
+ * onCommand Webhook – Fires every time Gopher receives a command.
+ *
+ * When Gopher receives a gopher command by email (ex command.param.param@gopher.email) this hook is fired.
  *
  * Examples:
- * - Add a contact to a CRM. Reply right away with
-     social media and contact info to include with the reminder.
+ * - Add a contact to a CRM and reply right away with
+	 social media and contact info.
  * - Reply with a confirmation that some action has been done.
  *
 **/
 
 'use strict';
-const debug = require('debug')('gopher-cmd:hooks:onCommand');
+const debug = require('debug')('gopher-intro:hooks:onCommand');
 const _ = require('lodash');
+const moment = require('moment-timezone');
 const config = require('../config');
-const logger = require('../lib/logger');
 const GopherHelper = require('gopher-helper');
+const logger = require('../lib/logger');
 const Mixpanel = require('mixpanel');
 const mixpanel = Mixpanel.init(config.mixpanel);
+const async = require('async');
 
-// process.env.TESTING = true;
+process.env.TESTING = true;	
 
 module.exports.main = (event, context, callback) => {
+	console.log('onCommand');
 	if (process.env.TESTING) {
-		event = require('../test/mock.js').onActionEvent;
+		console.log('mocked');
+		var mock = require('../test/mock');
+		event = mock.onCommand;
 	}
 
-	let gopher = new GopherHelper(event, context, callback, config.fut); //magic helpers
+	let gopher = new GopherHelper(event, context, callback, config.fut);
+	logger.log('intro: onCommand webhook received');
+	debug('onCommand webhook received', event);
+
+	// make sure this is a valid, signed webhook
+	if (!process.env.TESTING && !gopher.webhookValidated)
+		return gopher.respondError('Webhook validation failed');
+
+	let to = gopher.source.to.join(',');
+	let from = gopher.source.from;
 	
-	if (!gopher.webhookValidated){
-		debug('webhook validation failed');
-		return gopher.respondError('Gopher is having connection troubles');
-	}
+	// Generate followup
 
-	var sourceEmail = gopher.parsedBody.action_data.source.from;
-	var parsedName = sourceEmail;
+	const futAddress = 	`1sec-${gopher.commandName}@gopher.email`;
 
-	try {
-		if (sourceEmail.indexOf('<') > -1) {
-			parsedName = sourceEmail.split('<')[0].trim().split(' ')[0];
+	let userData = gopher.getUserData();
+
+	var reminderParams = {
+		timezone: gopher.user.timezone,
+		source: {
+			from: gopher.source.from,
+			subject: 'Reilly Sweetland | Gopher',
+			body: '<p></p>',
+			type: 'api'
 		}
-	} catch (e) {
-		parsedName = sourceEmail;
-	}
-
-	let email = {
-		subject: 'Gopher Demo Day Email',
-		body: []
 	};
 
-	email.body.push({
-		type: 'html',
-		text: `<h2>Hi ${parsedName}, Hope you\'re enjoying Demo Day! Here are some demos you can try:</h2>`
-	});
+	reminderParams.source.recipients_to = to;
+	reminderParams.source.recipient_server = futAddress;
 
-	email.body.push({
-		type: 'button',
-		text: 'Salesforce',
-		action: 'salesforce',
-		subject: "Hit send to receive the Salesforce email demo",
-	});
+	let client = gopher.getClient(userData.fut_access_token);
+	// gopher.createFollowup('1sec', to);
+	client.createFut(reminderParams);
 
-	email.body.push({
-		type: 'button',
-		text: 'Producthunt',
-		action: 'producthunt',
-		subject: "Hit send to receive the Producthunt email demo",
-	});
-
-	email.body.push({
-		type: 'button',
-		text: 'Github',
-		action: 'github',
-		subject: "Hit send to receive the Github email demo",
-	});
-	email.body.push({
-		type: 'html',
-		text: `<p>&nbsp;</p>`
-	});
-
-	gopher.sendEmail(email);
 	return gopher.respondOk();
 }

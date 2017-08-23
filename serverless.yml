@@ -1,4 +1,4 @@
-service: gopher-cmd
+service: gopher-salesforce
 
 frameworkVersion: ">=1.2.0 <2.0.0"
 
@@ -10,7 +10,7 @@ provider:
   runtime: nodejs6.10
   region: us-east-1
   environment:
-    DEBUG: gopher*
+    DEBUG: 'gopher-salesforce:hooks:*'
 
 functions:
 
@@ -33,11 +33,11 @@ functions:
       - http:
           path: /onValidateCommandFormat
           method: post
-  onAction:
-    handler: handlers/onAction.main
+  onCreate:
+    handler: handlers/onCreate.main
     events:
       - http:
-          path: /onAction
+          path: /onCreate
           method: post
   onFollowup:
     handler: handlers/onFollowup.main
@@ -45,20 +45,26 @@ functions:
       - http:
           path: /onFollowup
           method: post
-  onFollowupCreate:
-    handler: handlers/onFollowupCreate.main
-    events:
-      - http:
-          path: /onCreate
-          method: post
-  onFollowupUpdate:
-    handler: handlers/onFollowupUpdate.main
+  onUpdate:
+    handler: handlers/onUpdate.main
     events:
       - http:
           path: /onUpdate
           method: post
-  onFollowupDelete:
-    handler: handlers/onFollowupDelete.main
+  onPreview:
+    handler: handlers/onPreview.main
+    events:
+      - http:
+          path: /onPreview
+          method: post          
+  onAction:
+    handler: handlers/onAction.main
+    events:
+      - http:
+          path: /onAction
+          method: post
+  onDelete:
+    handler: handlers/onDelete.main
     events:
       - http:
           path: /onDelete
@@ -92,7 +98,6 @@ functions:
       - http:
           path: /connectGopher
           method: get
-          cors: true
   gopherCallback:
     handler: handlers/gopher.gopherCallback
     events:
