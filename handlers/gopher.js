@@ -14,7 +14,6 @@ const path = require('path');
 const _ = require('lodash');
 const GopherHelper = require('gopher-helper');
 const config = require('./../config');
-const logger = require('./../lib/logger');
 
 module.exports.saveSettings = (event, context, callback) => {
 	let gopher = new GopherHelper(event, context, callback, config.fut);
@@ -37,7 +36,6 @@ module.exports.saveSettings = (event, context, callback) => {
 
 module.exports.getSettings = (event, context, callback) => {
 	debug('settings requested');
-	logger.log('remind: settings requested');
 	let gopher = new GopherHelper(event, context, callback, config.fut);
 	debug('gopher helper created');
 
@@ -138,7 +136,6 @@ module.exports.renderFrontEnd = (event, context, callback) => {
 	}
 
 	if (!fs.existsSync(requestFilePath)) {
-		logger.log('404 request error', {meta: {event: JSON.stringify(event)}});
 		return callback(null, {
 			statusCode: 404,
 			headers: {
@@ -157,7 +154,6 @@ module.exports.renderFrontEnd = (event, context, callback) => {
 		loadedFile = loadedFile.replace('{{ redirectUri }}', config.redirectUri);
 	}
 
-	logger.log('static page load', {meta: {path: event.path}});
 	return callback(null, {
 		statusCode: 200,
 		headers: {
