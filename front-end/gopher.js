@@ -1,13 +1,13 @@
-
-var FUTUtility = function() {
-	var oauthCallbackPath = 'fut_authorized';
-	var apiHost = '{{ ext_api }}';
-	var redirectUri = '{{ redirect_uri }}';
+// global onAuthSuccess()
+ 
+var GopherUtility = function() {
+	var oauthCallbackPath = 'gopher_authorized';
+	var baseUrl = '{{ baseUrl }}';
+	var redirectUri = '{{ redirectUri }}';
 	var api = {}
 
 	function isAuthorizing() {
 		if (window.location.href.indexOf(oauthCallbackPath) === -1) {
-			console.log('no callback path');
 			return false;
 		}
 		return true;
@@ -28,7 +28,7 @@ var FUTUtility = function() {
 					cb();
 			});
 		} else {
-			initiateFutConnection();
+			initiateGopherConnection();
 		}
 	}
 
@@ -49,7 +49,7 @@ var FUTUtility = function() {
 		// }
 
 		var getAuthTokenRequest = {
-			url: apiHost + '/futCallback?code=' + code,
+			url: baseUrl + 'gopherCallback?code=' + code,
 			type: 'GET',
 			dataType: 'json',
 			contentType: 'application/json; charset=utf-8',
@@ -59,8 +59,11 @@ var FUTUtility = function() {
 
 		$.ajax(getAuthTokenRequest)
 		.done(function (res) {
-			displaySuccess("Successfully Authorized FollowUpThen");
-			Cookies.set('fut_access_token', res.futAccessToken);
+			displaySuccess("Successfully authorized the Gopher Reminder Service.");
+			Cookies.set('fut_access_token', res.gopherAccessToken);
+			console.log('access token', res.gopherAccessToken);
+			onAuthSuccess(); //global
+			console.log(res);
 			NProgress.done();
 			cb(true);
 		}).fail(function (err) {
@@ -74,9 +77,9 @@ var FUTUtility = function() {
 		return Cookies.get('fut_access_token') ? true : false;
 	}
 
-	function initiateFutConnection() {
-		var connectFutRequest = {
-			url: apiHost + '/connectFut',
+	function initiateGopherConnection() {
+		var connectGopherRequest = {
+			url: baseUrl + 'connectGopher',
 			type: 'GET',
 			dataType: 'json',
 			contentType: 'application/json; charset=utf-8',
@@ -84,32 +87,32 @@ var FUTUtility = function() {
 			beforeSend: function() { NProgress.start();}
 		};
 
-		$.ajax(connectFutRequest)
+		$.ajax(connectGopherRequest)
 		.done(function (res) {
 			window.location.assign(res.authUri);
 			NProgress.done();
 		}).fail(function (err) {
-			displayError("<p>There was an error connecting to FollowUpthen: " + err.responseText + "</p>");
+			displayError("There was an error connecting to Gopher: " + err.responseText);
 			NProgress.done();
 		});
 	}
 
 	function fetchSettings(cb) {
 		var getSettings = {
-			url: apiHost + '/getSettings',
+			url: baseUrl + 'getSettings',
 			type: 'GET',
 			dataType: 'json',
 			contentType: 'application/json; charset=utf-8',
 			crossDomain: true,
-			beforeSend: function() {NProgress.start();},
+			beforeSend: function() { NProgress.start(); },
 		};
 		$.ajax(getSettings)
 		.done(function(res) {
 			NProgress.done();
-			cb(res.data, null);
+			cb(null, res.data);
 		}).fail(function(err) {
 			NProgress.done();
-			cb(null, err);
+			cb(err, null);
 		});
 
 	}
@@ -136,12 +139,31 @@ var FUTUtility = function() {
 	}
 
 	function submitSettingsForm(formElement, formItemSelector) {
+		var formData = {};
+
+		_.forEach($(formElement).find(formItemSelector), function (settingsField) {
+			switch (settingsField.type) {
+				case 'checkbox':
+					formData[settingsField.id] = settingsField.checked ? 1 : 0;
+					break;
+				case 'radio':
+					if (settingsField.checked) formData[settingsField.name] = settingsField.value;
+					break;
+				default:
+					formData[settingsField.id] = settingsField.value;
+			}
+		});
+
+		saveSettings(formData);
+	}
+
+	function saveSettings(settings, cb) {
 		NProgress.start();
 
 		var postOptions = {
-			url: apiHost + '/saveSettings',
+			url: baseUrl + 'saveSettings',
 			type: 'POST',
-			data: {},
+			data: JSON.stringify(settings),
 			dataType: 'json',
 			processData : false,
 			contentType: 'application/json; charset=utf-8',
@@ -149,28 +171,14 @@ var FUTUtility = function() {
 			beforeSend: function() { NProgress.start();},
 		};
 
-		_.forEach($(formElement).find(formItemSelector), function (settingsField) {
-			switch (settingsField.type) {
-				case 'checkbox':
-					postOptions.data[settingsField.id] = settingsField.checked ? 1 : 0;
-					break;
-				case 'radio':
-					if (settingsField.checked) postOptions.data[settingsField.name] = settingsField.value;
-					break;
-				default:
-					postOptions.data[settingsField.id] = settingsField.value;
-			}
-		});
-
-		postOptions.data = JSON.stringify(postOptions.data);
-
 		$.ajax(postOptions)
 		.then(function (res) {
-			displaySuccess('<p>You\'re all set!</p>');
 			NProgress.done();
+			if (!_.isNil(cb)) cb(null);
 		}).catch(function (err) {
-			displayError('<p>Sorry, there was an error saving your options. Please try <a class="alert-link" href="/connectFut">logging in again</a>. If this continues to be a problem please <a class="alert-link" href="http://help.followupthen.com/contact">contact us</a>.</p> (' + err.responseText + ')')
+			displayError('<p>Sorry, there was an error saving your options. Please try <a class="alert-link" href="/connectGopher">logging in again</a>. If this continues to be a problem please <a class="alert-link" href="http://help.followupthen.com/contact">contact us</a>.</p> (' + err.responseText + ')')
 			NProgress.done();
+			if (!_.isNil(cb)) cb(err);
 		});
 	}
 
@@ -189,18 +197,21 @@ var FUTUtility = function() {
 		 }
 	};
 
-	api.apiHost = apiHost;
-	api.futAccessToken = Cookies.get('fut_access_token');
+	api.baseUrl = baseUrl;
+	api.displayError = displayError;
+	api.displaySuccess = displaySuccess;
+	api.gopherAccessToken = Cookies.get('fut_access_token');
 	api.fetchSettings = fetchSettings;
 	api.populateSettingsForm = populateSettingsForm;
+	api.saveSettings = saveSettings;
 	api.submitSettingsForm = submitSettingsForm;
 	api.logIn = logIn;
 	return api;
 }
 
-var futLogIn = function(cb) {
-	var fut = new FUTUtility();
-	fut.logIn(function() {
-		cb(fut);
+var gopherLogIn = function(cb) {
+	var gopher = new GopherUtility();
+	gopher.logIn(function() {
+		cb(gopher);
 	});
 }

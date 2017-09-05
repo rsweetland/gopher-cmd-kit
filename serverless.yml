@@ -10,7 +10,7 @@ provider:
   runtime: nodejs6.10
   region: us-east-1
   environment:
-    # DEBUG: fut:hooks,fut
+    DEBUG: gopher*
 
 functions:
 
@@ -21,29 +21,17 @@ functions:
       - http:
           path: /onCommand
           method: post
-  onCreate:
-    handler: handlers/onCreate.main
+  onRequestOptions:
+    handler: handlers/onRequestOptions.main
     events:
       - http:
-          path: /onCreate
+          path: /onRequestOptions
           method: post
-  onFollowup:
-    handler: handlers/onFollowup.main
+  onValidateCommandFormat:
+    handler: handlers/onValidateCommandFormat.main
     events:
       - http:
-          path: /onFollowup
-          method: post
-  onUpdate:
-    handler: handlers/onUpdate.main
-    events:
-      - http:
-          path: /onUpdate
-          method: post
-  onPreview:
-    handler: handlers/onPreview.main
-    events:
-      - http:
-          path: /onPreview
+          path: /onValidateCommandFormat
           method: post
   onAction:
     handler: handlers/onAction.main
@@ -51,8 +39,26 @@ functions:
       - http:
           path: /onAction
           method: post
-  onDelete:
-    handler: handlers/onDelete.main
+  onFollowup:
+    handler: handlers/onFollowup.main
+    events:
+      - http:
+          path: /onFollowup
+          method: post
+  onFollowupCreate:
+    handler: handlers/onFollowupCreate.main
+    events:
+      - http:
+          path: /onCreate
+          method: post
+  onFollowupUpdate:
+    handler: handlers/onFollowupUpdate.main
+    events:
+      - http:
+          path: /onUpdate
+          method: post
+  onFollowupDelete:
+    handler: handlers/onFollowupDelete.main
     events:
       - http:
           path: /onDelete
@@ -67,35 +73,36 @@ functions:
 
   # Private Data Handlers
   saveSettings:
-    handler: handlers/fut.saveSettings
+    handler: handlers/gopher.saveSettings
     events:
       - http:
           path: /saveSettings
           method: post
   getSettings:
-    handler: handlers/fut.getSettings
+    handler: handlers/gopher.getSettings
     events:
       - http:
           path: /getSettings
           method: get
 
   # Auth
-  connectFut:
-    handler: handlers/fut.connectFut
+  connectGopher:
+    handler: handlers/gopher.connectGopher
     events:
       - http:
-          path: /connectFut
+          path: /connectGopher
           method: get
-  futCallback:
-    handler: handlers/fut.futCallback
+          cors: true
+  gopherCallback:
+    handler: handlers/gopher.gopherCallback
     events:
       - http:
-          path: /futCallback
+          path: /gopherCallback
           method: get
   
   #Front-End Handler
   renderStatic:
-    handler: handlers/fut.renderFrontEnd
+    handler: handlers/gopher.renderFrontEnd
     events:
       - http:
           path: /

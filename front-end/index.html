@@ -7,7 +7,7 @@
 	</head>
 	<body>
 		<nav class="navbar navbar-fixed-top">
-			<h4><strong>FollowUpThen - Extension</strong></h4>
+			<h4><strong>Gopher Command</strong></h4>
 		</nav>
 		<div class="container" id="content">
 			<div class="alert alert-dismissible alert-warning hide" id="error">
@@ -18,63 +18,30 @@
 				<button type="button" class="close" data-dismiss="alert">&times;</button>
 			</div>
 
-			<section class="row hide" id="memorize-settings">
+			<section class="row hide" id="setup-complete">
+				<div class="col-sm-12">
+					<h1>Setup Complete!</h1>
+					<h2 class="lead">You can close this window and return to Gmail.</h2>
+					<!-- <button type="button" class="btn btn-primary" onClick="this.innerHtml('123');">Settings / Instructions</button> -->
+				</div>
+			</section>
+
+			<section class="row hide" id="command-settings">
 				<div class="col-sm-7">
+					<h1>Reminder Settings</h1>
 					<form class="form-horizontal settings-form" method="POST" action="/saveSettings">
-		              <h1>Settings</h1>
-		              <fieldset>
 		                <div class="form-group">
-		                  <label for="inputEmail" class="col-lg-2 control-label">Email</label>
-		                  <div class="col-lg-10">
-		                    <input type="text" class="form-control fut-setting" id="inputEmail" placeholder="Email">
-		                  </div>
-		                </div>
+	                    <div class="checkbox">
+	                      <label>
+	                        <input class="fut-setting" type="checkbox" id="confirmations_off"> Turn off scheduling confirmation messages.
+	                      </label>
+	                    </div>
+	                    </div>
 		                <div class="form-group">
-		                  <label for="inputPassword" class="col-lg-2 control-label">Password</label>
+		                  <label for="inputEmail" class="col-lg-2 control-label">Default Option</label>
 		                  <div class="col-lg-10">
-		                    <input type="password" class="form-control fut-setting" id="inputPassword" placeholder="Password">
-		                    <div class="checkbox">
-		                      <label>
-		                        <input class="fut-setting" type="checkbox" id="inputCheckbox"> Checkbox
-		                      </label>
-		                    </div>
-		                  </div>
-		                </div>
-		                <div class="form-group">
-		                  <label for="textArea" class="col-lg-2 control-label">Textarea</label>
-		                  <div class="col-lg-10">
-		                    <textarea class="form-control fut-setting" rows="3" id="textArea"></textarea>
-		                    <span class="help-block">A longer block of help text that breaks onto a new line and may extend beyond one line.</span>
-		                  </div>
-		                </div>
-		                <div class="form-group">
-		                  <label class="col-lg-2 control-label">Radios</label>
-		                  <div class="col-lg-10">
-		                    <div class="radio">
-		                      <label>
-		                        <input class="fut-setting" type="radio" name="optionsRadios" id="optionsRadios1" value="option1" checked="">
-		                        Option one is this
-		                      </label>
-		                    </div>
-		                    <div class="radio">
-		                      <label>
-		                        <input class="fut-setting" type="radio" name="optionsRadios" id="optionsRadios2" value="option2">
-		                        Option two can be something else
-		                      </label>
-		                    </div>
-		                  </div>
-		                </div>
-		                <div class="form-group">
-		                  <label for="select" class="col-lg-2 control-label">Selects</label>
-		                  <div class="col-lg-10">
-		                    <select class="fut-setting form-control" id="select">
-		                      <option>1</option>
-		                      <option>2</option>
-		                      <option>3</option>
-		                      <option>4</option>
-		                      <option>5</option>
-		                    </select>
-		                    <br>
+		                    <input type="text" class="form-control fut-setting" id="default_command" placeholder="Default: remind.me.3weekdays" >
+		                  <span class="help-block">Default options when you just type "remind".</span>
 		                  </div>
 		                </div>
 		                <div class="form-group">
@@ -82,17 +49,19 @@
 		                    <button type="submit" class="btn btn-primary" id="save_settings">Submit</button>
 		                  </div>
 		                </div>
-		              </fieldset>
-		            </form>
+	                </form>
 				</div>
+
 				<div class="col-sm-5">
 					<div class="well">
 						<h3>How To Use</h3>
-						<p><code>2weeks<strong>-memorize</strong>@fut.io</code></p>
-						<p>Creates a reminder which will be sent to you after 2 weeks, 4 weeks, 8 weeks, etc.</p>
-
-						<p>We would love to hear your feedback: <a href="mailto:help@humans.fut.io">help@humans.fut.io</a></p>
+						<p><code><strong>remind</strong>.[who].[when]</code></p>
+						<p>Create a email reminder for yourself or another.</p>
+						<p>What do you think?<a href="mailto:help@humans.fut.io">help@humans.fut.io</a></p>
 					</div>
+<!-- 					<p class="lead">Head on over to <a href="https://www.gopher.email">the website</a> to view and manage your email reminders.</p>
+					<button href="https://www.gopher.email/pending" class="btn btn-primary">My Reminders</button> -->
+
 				</div>
 			</section>
 
@@ -107,7 +76,7 @@
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.4/lodash.min.js"></script>
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/nprogress/0.2.0/nprogress.min.js"></script>
 		<!--app-->
-		<script src="./fut.js"></script>
+		<script src="./gopher.js"></script>
 		<script src="./app.js"></script>
 	</body>
 </html>

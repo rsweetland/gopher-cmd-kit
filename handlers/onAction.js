@@ -2,119 +2,145 @@
  *
  * onAction Webhook – Fires when a user executes an email-based action.
  * See onFollowup.js for an example of how this magical button
- * can be created. It can be added to any email that Gopher sends
- * out.
+ * can be created. An email-action can be added to any email that Gopher sends
  *
- * It can also be set as the "replyto" for an email that Gopher sends
- * out. This lets you send emails that simply ask for a reply. These
- * replies then come into this endpoint.
+ * It can also be set as the "replyto" for emails that Gopher sends.
+ * This lets you send emails that simply ask for a reply, or that
+ * have a dialog with the user. All of that arrives here.
  *
  * Examples:
  * - One-click entry for a CRM without leaving email
  * - Mark a task as completed without leaving email
  * - Easily create a new task
- * -
  *
 **/
 
 'use strict';
 const debug = require('debug')('gopher-cmd:hooks:onAction');
 const _ = require('lodash');
-const futUtils = require('./../lib/futUtils');
+const GopherHelper = require('gopher-helper');
 const config = require('../config');
 
 module.exports.main = (event, context, callback) => {
+
+	if(process.env.TESTING) {
+        debug('...Mocked Events....');
+        var mock = require('../test/mock');
+        event = mock.onAction;
+    }
+
 	debug('onAction Webhook Received:', event);
-	let fut = new futUtils(event, context, callback);
-	if (!fut.webhookValidated)
-		return fut.respondError('Webhook validation failed');
+	let gopher = new GopherHelper(event, context, callback, config.fut);
 
-	// handy info we get with the webhook
-	const privateData = _.get(fut.parsedBody, 'followup.extension.private_data');  // Data stored at the user-level. Same with every webhook. Ex, user account preferences, auth tokens, etc
-	const followupData = _.get(fut.parsedBody, 'followup.extension.followup_data'); // Data stored against a particular reminder. Like a note, or a lookup key for a linked item in another system like a todo list or CRM
 
-	let response = {};
-	_.set(response, 'followup.send', true); // Andy: This triggers the followup email, correct?
-	_.set(response, 'followup.extension.followup_data.my_custom_key', 'My Custom Value');  // Store some more custom data with this reminder
 
-	// Add data to the body of the email reminder.
-	let body = [
-		{
-			type: 'title',
-			text: 'A Surprisingly Useful Reminder'
-		},
-		{
-			type: 'html',
-			text: `
-					<p>Pull the latest contact information, article, product pricing, server status
-					report, social media info. Include it all in your timely, useful reminder.
-					<p><img src="https://media.giphy.com/media/Z3l1Oo5Ro9ZSw/giphy.gif"></p>
-					`
-		},
-	    {
-	    	type: 'section',
-	    	title: 'TAGS',
-	    	text: 'Tightly group labeled information together like this.'
-	    },
-	    {
-	    	type: 'section',
-	    	title: 'DESCRIPTION',
-	    	text: 'A second descriptive item.'
-	    },
-	    {
-	    	type: 'section',
-	    	title: 'A MORE SPACED OUT SECTION',
-	    },
-	    {
-	    	type: 'html',
-	    	text: `Now ther there is some more space to render a larger bit of text. Even pull long-form content
-	    	 into an email. If it arrives at the right time, great.`
-	    },
-	    {
-	    	type: 'section',
-	    	title: 'ADD SOME DATA'
-	    },
-	    {
-		     type: 'button',
-		     text: 'Link To Website',
-		     url: 'https://www.google.com/'
-	    },
-	    {
-		     type: 'button',
-		     text: 'An Email-Based Action',
-		     action: 'my.custom.action',
-		     subject: "Fire off an API call by composing a new email",
-		     body: `The 'action', 'taskid', 'action' and contents of this email are included in webhook request
-		     		to your actions endpoint.` // Possibilities > endless
-	    },
-	    {
-	    	type: 'html',  // note: old-fashioned tables are a reliable way layout an HTML email.
-	    	text: `<table border="0">
-	    			<tr>
-	    				<td>
-			    			<p>The <strong>Email-Action</strong> button lets you get things done
-			    			without leaving your inbox. Look at how fast this interaction is on a native
-			    			email client.</p>
+	if (!gopher.webhookValidated)
+		return gopher.respondError('Webhook validation failed');
 
-			    			<p>Use this to streamline data entry, flag tasks as done, append to lists,
-				     		blog posts and more. All without leaving your email.</p>
 
-			    			<p>The last section (postpone) comes by default on non-recurring reminders.</p>
-			    		</td>
-			    		<td>
-			    			<img src="https://www.followupthen.com/assets/anim_email_actions.gif" width="200px" border="0px">
-			    		</td>
-			    	</tr>
-			    	</table>
-	    			`
-	    },
-	];
+	switch(gopher.action) {
+		case 'notifications':
+			if(gopher.actionParams[0] === 'check') {
+				debug('checking confirmations');
+				let confirmations = _.get(gopher.userData, 'confirmations_off') ? 'Off' : 'On';
+				gopher.setEmailReplyTo('help+gopher@humans.fut.io');
+				gopher.sendEmail({
+						body: [
+						{
+							type: 'title',
+							text: `Confirmations: ${confirmations}`
+						},
+						{
+							type: 'button',
+							url: config.baseUrl,
+							text: 'Update Your Settings'
+						},
+						{
+							type: 'html',
+							text: '<table border="0" width="100%"><tr><td></td></tr></table>'
+						} 
+						]
+					});
+				return gopher.respondOk();
+			}
 
-	_.set(response, 'followup.body', body);
-	// TODO _.set(response, 'followup.replyto', );
+			gopher.setUserData({confirmations_off: 1});
+			gopher.setEmailReplyTo({action: 'notifications.check'});
+			gopher.sendEmail({
+				subject: "Confirmations have been turned off",
+				body: [
+					{
+						"type": "title",
+						"text": "Confirmations have been turned off."
+					}
+				]
+			});
 
-	if (fut.isSimulation)
-		return fut.respondOk(response);
+			return gopher.respondOk();
 
-	return fut.respondOk(response);
+
+		break;
+
+		case 'postpone':
+			debug('In Postpone. Params are: ', gopher.actionParams);
+
+			if(_.isEmpty(followupid) || _.isEmpty(newDate)) {
+				return gopher.respondError("Sorry, for some reason your followup information didn't come through. Please try again or contact support.");
+			}
+
+			if(_.get(gopher.userData, 'fut_access_token')) {
+				var followupClient = gopher.getClient(_.get(gopher.userData, 'fut_access_token'));
+			} else {
+				return gopher.respondOk({  soft_errors: [ { message: "Your Gopher login information was incorrect or could not be located. Please login"}]});
+			}
+
+			followupClient.updateFut(followupid, {reschedule: 1, fut_format: newDate})
+			.then((res) => {
+				debug('Successfully Rescheudled', res);
+				return gopher.respondOk(res);
+			})
+			.catch((err) => {
+				debug('Error Rescheduling: ', err);
+				return gopher.respondError(err);
+			});
+		break;
+
+		default:
+			debug(gopher.source.from);
+			return gopher.respondOk({
+				followup: {
+					subject: "Action Email Error", // Best practice: Always put original subject in the action error email so the user find it.
+					body: [
+						{
+							type: 'title',
+							text: "Sorry, we couldn't understand that action"
+						},
+						{
+							type: 'html',
+							text:
+							`
+							<p>It looks like you sent an action that we didn't recognize.</p>
+							<p>If this action was related to a followup, the subject will be provided here: </p>
+
+							<p> ${gopher.source.subject} </p>
+
+							<p>Would you hitting reply and letting us know about the error?</p>
+							<p>We're adding some additional information to help track down the issue:</p>
+							<p>----<br />
+							Action: ${gopher.fullAction}<br />
+							From: ${gopher.source.from}<br />
+							Followup Id: ${gopher.followup.id}<br />
+							</p>
+
+							<p> - Team Gopher </p>
+
+							`
+						}
+					]
+				},
+				replyto: 'help+gopher@humans.fut.io'
+			});
+		break;
+	}
+
 }

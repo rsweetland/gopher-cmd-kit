@@ -18,139 +18,110 @@
 const debug = require('debug')('gopher-cmd:hooks:onCommand');
 const _ = require('lodash');
 const config = require('../config');
-const futUtils = require('./../lib/futUtils');
+const GopherHelper = require('gopher-helper');
 
 module.exports.main = (event, context, callback) => {
+
 	debug('onCommand: Webhook Received:', event);
-	let fut = new futUtils(event, context, callback);
+	let gopher = new GopherHelper(event, context, callback, config.fut);
+	if (!gopher.webhookValidated)
+		return gopher.respondError('Webhook validation failed');
 
-	if (!fut.webhookValidated)
-		return fut.respondError('Webhoook failed to validate');
+	var response = {};
 
-	// handy info we get with the webhook
-  // Data stored at the user-level. Same with every webhook. Ex, user account preferences, auth tokens, etc
-	const futAccessToken = _.get(fut.parsedBody, 'extension.private_data.fut_access_token', '');
-	const requestSource = _.get(fut.parsedBody, 'followup.source', {});
+  	// Get validated gopherClient from stored auth token
+	const futAccessToken = _.get(gopher.userData, 'fut_access_token') || _.get(gopher, "parsedBody.extension.shared_data['Gopher Chrome'].fut_access_token"); //TODO: Create Gopher Helper to store this.
+	if (!futAccessToken) {
 
-  if (!futAccessToken) {
-  }
+		return gopher.respondError(`Gopher had trouble connecting to the reminder service. 
+			Please visit this URL to reconnect: ${config.baseUrl}`);
 
-  const futClient = fut.getClient(futAccessToken);
+	} else {
+		gopher.getClient(futAccessToken);
+	}
 
-  // ex: ['remind.me.1hour', 'gopher.email']
-  const recipientSplit = _.get(requestSource, 'recipient', '').split('@');
+  	// Get Command Params
+	let commandOptions = gopher.commandOptions;
+	let recipientOption = commandOptions[0];  //ex remind.{recipientOption}.3days
+	let timeStringOption = commandOptions[1]; //ex remind.recipient.{timeStringOption}
+	let commandName = gopher.commandName;
 
-  // ex: ['remind', 'me', '1hour']
-  const commandSplit = recipientSplit[0].split('.');
-
-  // ex: '1hour'
-  const futFormat = commandSplit[commandSplit.length - 1];
-
-  const params = {
-    source: {
-      recipient_server: futFormat + '@' + recipientSplit[1], // ex: 1hour@gopher.email
-      recipients_to: _.get(requestSource, 'headers.to', ''),
-      from: _.get(requestSource, 'from', ''),
-      body: _.get(requestSource, 'body', ''),
-      type: 'api',
-      subject: _.get(requestSource, 'subject', ''),
+    // If no params given, use defaults
+    if(!recipientOption && !timeStringOption) {
+        let fallbackCommand = _.get(gopher.userData, 'default_command', 'remind.me.3days');
+        gopher.setCommand(fallbackCommand);
+        recipientOption = gopher.commandOptions[0];
+        timeStringOption = gopher.commandOptions[1];
+        var fallbackUsed = true;
     }
-  };
 
-  if (_.has(requestSource, 'headers.cc')) {
-    params.source['recipients_cc'] = _.get(requestSource, 'headers.cc', '');
-  }
+	// Schedule a followup
+	if (recipientOption === 'everyone') {
+		debug('shared reminder scheduled: ', `${gopher.source.to}, ${gopher.source.cc}`);
+		debug('creating followup');
+		gopher.createFollowup(timeStringOption, `${gopher.source.to}, ${gopher.source.cc}`)
+		.then(respondSuccess)
+		.catch(handleError);
 
-  if (_.has(requestSource, 'headers.bcc')) {
-    params.source['recipients_bcc'] = _.get(requestSource, 'headers.bcc', '');
-  }
+	} else {
+		debug('creating followup');
+		gopher.createFollowup(timeStringOption)
+		.then(respondSuccess)
+		.catch(handleError);
+	}
 
-  debug('futReminderAPIParams', params);
+	function respondSuccess(followupApiResponse) {
+		debug('responding successfully');
 
-  futClient.createFut(params)
-  .then((res) => debug('Followup Created API Response: ', res))
-  .catch((err) => debug('Followup API Error: ', err));
+		if(!_.get(gopher.userData, 'confirmations_off')) {
+			let followupAudience = recipientOption === 'everyone' ? `${gopher.source.to}, ${gopher.source.cc}` : 'only you';
+				if(fallbackUsed)
+					var fallbackUsedMessage = `Because you didn't specify a date, we used ${fallbackCommand}. You can change this on your extension's settings page.`;
 
-	let response = {};
+				response.followup = {
+						subject: `Gopher followup scheduled for ${followupApiResponse.followup.due_friendly}`,
+						body: [
+						{
+							type: "title",
+							text: "Your Gopher reminder has been scheduled"
+						},
+						{
+							type: "html",
+							text: `Gopher will followup with ${followupAudience} on ${followupApiResponse.followup.due_friendly}. ${fallbackUsedMessage}`
+						},
+						{
+						     type: 'button',  //see section on email-based actions
+						     text: 'Web: Turn off these Confirmations',
+						     url: config.baseUrl
+					    },
+						{
+						     type: 'button',  //see section on email-based actions
+						     text: 'Action Email: Turn off these Confirmations',
+						     action: 'notifications.off',
+						     subject: "Hit Send to Turn off Confirmation Emails",
+						     body: "This is a Gopher email-action, a handy way of getting stuff done without ever leaving your inbox.",
+					    },
+					    {
+					    	type: 'html',
+					    	text: '<table width="100%" border="0"><tr><td></td></tr></table>',
+					    }
+						]
+					};
+			
+			return callback(null, {
+					statusCode: 200, 
+					body: JSON.stringify(response)
+				});
 
-	// Add data to the body of the email reminder.
-	let body = [
-		{
-			type: 'title',
-			text: 'A Surprisingly Useful Reminder'
-		},
-		{
-			type: 'html',
-			text: `
-					<p>Pull the latest contact information, article, product pricing, server status
-					report, social media info. Include it all in your timely, useful reminder.
-					<p><img src="https://media.giphy.com/media/Z3l1Oo5Ro9ZSw/giphy.gif"></p>
-					`
-		},
-	    {
-	    	type: 'section',
-	    	title: 'TAGS',
-	    	text: 'Tightly group labeled information together like this.'
-	    },
-	    {
-	    	type: 'section',
-	    	title: 'DESCRIPTION',
-	    	text: 'A second descriptive item.'
-	    },
-	    {
-	    	type: 'section',
-	    	title: 'A MORE SPACED OUT SECTION',
-	    },
-	    {
-	    	type: 'html',
-	    	text: `Now ther there is some more space to render a larger bit of text. Even pull long-form content
-	    	 into an email. If it arrives at the right time, great.`
-	    },
-	    {
-	    	type: 'section',
-	    	title: 'ADD SOME DATA'
-	    },
-	    {
-		     type: 'button',
-		     text: 'Link To Website',
-		     url: 'https://www.google.com/'
-	    },
-	    {
-		     type: 'button',
-		     text: 'An Email-Based Action',
-		     action: 'my.custom.action',
-		     subject: "Fire off an API call by composing a new email",
-		     body: `The 'action', 'taskid', 'action' and contents of this email are included in webhook request
-		     		to your actions endpoint.` // Possibilities > endless
-	    },
-	    {
-	    	type: 'html',  // note: old-fashioned tables are a reliable way layout an HTML email.
-	    	text: `<table border="0">
-	    			<tr>
-	    				<td>
-			    			<p>The <strong>Email-Action</strong> button lets you get things done
-			    			without leaving your inbox. Look at how fast this interaction is on a native
-			    			email client.</p>
+		} else {
+			// silence...
+			debug('reminder created');
+			return gopher.respondOk();
+		}
+	}
 
-			    			<p>Use this to streamline data entry, flag tasks as done, append to lists,
-				     		blog posts and more. All without leaving your email.</p>
-
-			    			<p>The last section (postpone) comes by default on non-recurring reminders.</p>
-			    		</td>
-			    		<td>
-			    			<img src="https://www.followupthen.com/assets/anim_email_actions.gif" width="200px" border="0px">
-			    		</td>
-			    	</tr>
-			    	</table>
-	    			`
-	    },
-	];
-
-	_.set(response, 'followup.body', body);
-	// TODO _.set(response, 'followup.replyto', );
-
-	if (fut.isSimulation)
-		return fut.respondOk(response);
-
-	return fut.respondOk({});
+	function handleError(err) {
+		debug('Error creating the reminder: ', err);
+		return gopher.respondError({message: `Sorry, there was an error creating your followup: ${err}`});
+	}
 }

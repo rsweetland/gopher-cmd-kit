@@ -1,22 +1,26 @@
 {
   "name": "gopher-cmd",
   "version": "1.0.0",
-  "description": "Extension to help you remember things",
+  "description": "An example Gopher Command",
   "repository": "<replace>",
   "author": "@rsweetland",
-  "license": "GPL",
+  "license": "",
   "scripts": {
-    "dev": "DEBUG=gopher* ./node_modules/serverless/bin/serverless offline start"
+    "dev": "DEBUG=gopher-cmd:* ./node_modules/serverless/bin/serverless offline start --port 3000",
+    "mock": "DEBUG=gopher-cmd:* TESTING=true ./node_modules/serverless/bin/serverless offline start",
+    "ngrok": "ngrok http localhost:3000",
   },
   "dependencies": {
     "cookie": "^0.3.1",
-    "fut-node": "git+https://git@github.com:rsweetland/fut-node.git",
+    "fut-node": "git+https://git@github.com:rsweetland/fut-node.git#0.2",
+    "gopher-helper": "git+https://git@github.com:rsweetland/gopher-helpers.git",
     "lodash": "^4.17.4",
     "moment": "^2.18.1",
     "qs": "^6.5.0",
     "serverless": "^1.18.1"
   },
   "devDependencies": {
-    "serverless-offline": "^3.15.1"
+    "chai": "^4.1.0",
+    "serverless-offline": "^3.15.3",
   }
 }
