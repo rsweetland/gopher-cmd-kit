@@ -1,10 +1,10 @@
 function onAuthSuccess() {
-	$('#setup-complete').removeClass('hide');
-	$('#command-settings').hide();
+	// Things you can do after user finishes authenticating
+	// $('#setup-complete').removeClass('hide');
+	// $('#command-settings').hide();
 }
 
 gopherLogIn(function(gopher) {
-	var apiPath = 'https://www.googleapis.com/calendar/v3';
 
 	gopher.fetchSettings(function(err, settings) {
 		console.log(settings);
