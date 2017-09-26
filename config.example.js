@@ -5,7 +5,7 @@
  * create a duplicate command and update the production section.
  */
 
-var baseUrl, clientId, clientSecret;
+var baseUrl, clientId, clientSecret, scope;
 var futURL = 'https://www.followupthen.com/';
 
 if (process.env.IS_OFFLINE) {
@@ -13,6 +13,8 @@ if (process.env.IS_OFFLINE) {
 	baseUrl = '';
 	clientId = '';
 	clientSecret = '';
+	scope = 'get_user_info extension_manage_self manage_reminders read_reminders manage_logs read_logs read_tasks manage_tasks';
+	//TODO: Generate scope in copy / paste setup code. For now, delete what you don't need.
 	////////////////////////////////////////////////////////////////////////
 
 } else {
@@ -20,6 +22,7 @@ if (process.env.IS_OFFLINE) {
 	baseUrl = '';
 	clientId = '';
 	clientSecret = '';
+	scope = 'get_user_info extension_manage_self manage_reminders read_reminders manage_logs read_logs read_tasks manage_tasks';
 	////////////////////////////////////////////////////////////////////////
 }
 
@@ -34,7 +37,7 @@ const config = {
 		tokenPath: futURL + 'api/v1/oauth2/access_token',
 		authorizePath: futURL + 'settings/oauth2_authorize',
 		redirectUri: baseUrl + '?gopher_authorized=1',
-		scope: 'get_user_info extension_manage_self manage_reminders'
+		scope: scope
 	}
 }
 
