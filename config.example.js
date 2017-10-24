@@ -6,7 +6,7 @@
  */
 
 var baseUrl, clientId, clientSecret, scope;
-var futURL = 'https://www.followupthen.com/';
+var apiUrl = 'https://www.gopher.email/';
 
 if (process.env.IS_OFFLINE) {
 	///////////////// LOCALHOST /////////////////////////////////////////////
@@ -28,14 +28,14 @@ if (process.env.IS_OFFLINE) {
 
 const config = {
 	baseUrl: baseUrl,
-	gopherUrl: futURL,
+	gopherUrl: apiUrl,
 	fut: {
 		clientId: clientId,
 		clientSecret: clientSecret,
-		tokenHost: futURL,
-		apiHost: futURL,
-		tokenPath: futURL + 'api/v1/oauth2/access_token',
-		authorizePath: futURL + 'settings/oauth2_authorize',
+		tokenHost: apiUrl,
+		apiHost: apiUrl,
+		tokenPath: apiUrl + 'api/v1/oauth2/access_token',
+		authorizePath: apiUrl + 'settings/oauth2_authorize',
 		redirectUri: baseUrl + '?gopher_authorized=1',
 		scope: scope
 	}
